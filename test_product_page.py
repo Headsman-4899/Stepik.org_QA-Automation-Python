@@ -1,36 +1,39 @@
+import time
 
 import pytest
 
+from pages.login_page import LoginPage
 from pages.product_page import ProductPage
 from pages.basket_page import BasketPage
 
-# @pytest.mark.parametrize('link', ["http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer0",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer1",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer2",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer3",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer4",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer5",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer6",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer7",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer8",
-#                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer9"])
-# def test_guest_can_add_product_to_basket(browser, link):
-#     product_page = ProductPage(browser, link)
-#     product_page.open()
-#     product_page.click_button_add_to_basket()
-#     product_page.solve_quiz_and_get_code()
-#     product_page.should_be_alert_product_added_to_basket()
-#     product_page.should_be_product_price_in_alert_is_product_price()
 
+class TestUserAddToBasketFromProductPage:
+    @pytest.fixture(scope='function', autouse=True)
+    def setup(self, browser):
+        link = "http://selenium1py.pythonanywhere.com/ru/accounts/login/"
+        page = LoginPage(browser, link)
+        page.open()
+        email = str(time.time()) + "@fakemail.org"
+        password = str(time.time()) + "fake_password"
+        page.register_new_user(email, password)
 
-# def test_guest_can_add_product_to_basket(browser):
-#     product_page = ProductPage(browser, link)
-#     product_page.open()
-#     product_page.click_button_add_to_basket()
-#     product_page.solve_quiz_and_get_code()
-#     product_page.should_be_alert_product_added_to_basket()
-#     product_page.should_be_product_price_in_alert_is_product_price()
-#     time.sleep(15)
+    def test_user_cant_see_success_message(self, browser):
+        link = "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/"
+        page = ProductPage(browser, link)
+        page.open()
+        page.should_not_be_success_message()
+
+    def test_user_can_add_product_to_basket(self, browser):
+        link = "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/"
+        page = ProductPage(browser, link)
+        page.open()
+        page.click_button_add_to_basket()
+        item_name = page.get_product_name()
+        item_price = page.get_product_price()
+        page.add_item_to_basket()
+        page.solve_quiz_and_get_code()
+        page.should_be_equal_names_and_prices(item_name, item_price)
+
 
 @pytest.mark.xfail
 def test_guest_cant_see_success_message_after_adding_product_to_basket(browser):
@@ -38,13 +41,6 @@ def test_guest_cant_see_success_message_after_adding_product_to_basket(browser):
     page = ProductPage(browser, link)
     page.open()
     page.click_button_add_to_basket()
-    page.should_not_be_success_message()
-
-
-def test_guest_cant_see_success_message(browser):
-    link = "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/"
-    page = ProductPage(browser, link)
-    page.open()
     page.should_not_be_success_message()
 
 
